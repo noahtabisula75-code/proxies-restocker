@@ -61,7 +61,7 @@ def toggle_proxy(proxy_id):
     conn.close()
     return redirect(url_for('index'))
 
-# ------------------- API for your checker -------------------
+# ------------------- API -------------------
 @app.route('/api/proxy')
 def get_proxy():
     conn = get_db()
