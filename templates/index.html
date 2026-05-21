@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProxyForge · Residential Proxy Pool</title>
+
+  <!-- Bootstrap 5 + Font Awesome 6 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg: #090b10;
+      --surface: #111827;
+      --border: #1f2937;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56,189,248,0.2);
+      --green: #4ade80;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --radius: 14px;
+      --transition: all 0.2s ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated background mesh */
+    .bg-animation {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -2;
+      opacity: 0.15;
+      background:
+        radial-gradient(ellipse at 20% 20%, #38bdf8 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, #a855f7 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, #0f172a 0%, transparent 70%);
+      background-size: 200% 200%;
+      animation: bgShift 25s infinite alternate;
+    }
+
+    @keyframes bgShift {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 100% 100%; }
+    }
+
+    /* Glass navbar */
+    .navbar {
+      background: rgba(17,24,39,0.75);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.7rem;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Main container */
+    .container {
+      max-width: 1250px;
+      margin-top: 2rem;
+    }
+
+    /* Stats cards */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      transition: var(--transition);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5), 0 0 18px var(--accent-glow);
+      border-color: var(--accent);
+    }
+
+    .stat-icon {
+      font-size: 2.5rem;
+      width: 70px;
+      height: 70px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .stat-value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-total { border-left: 4px solid var(--accent); }
+    .card-active { border-left: 4px solid var(--green); }
+    .card-blocked { border-left: 4px solid var(--red); }
+
+    /* Add proxy form */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.8rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .form-control, .btn {
+      border-radius: 10px;
+      padding: 0.8rem 1.2rem;
+    }
+
+    .form-control {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 0.2rem var(--accent-glow);
+      background: var(--bg);
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      border: none;
+      color: white;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .btn-accent:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 20px var(--accent-glow);
+      color: white;
+    }
+
+    /* Table wrapper */
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .table {
+      margin-bottom: 0;
+      color: var(--text);
+    }
+
+    .table thead th {
+      background: rgba(0,0,0,0.25);
+      border-bottom: 2px solid var(--border);
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.6px;
+      padding: 1rem;
+    }
+
+    .table tbody td {
+      padding: 1rem;
+      vertical-align: middle;
+      border-color: var(--border);
+    }
+
+    .table tbody tr {
+      transition: background 0.15s;
+    }
+
+    .table tbody tr:hover {
+      background: rgba(56,189,248,0.03);
+    }
+
+    .proxy-string {
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 0.9rem;
+      word-break: break-all;
+      background: rgba(0,0,0,0.3);
+      padding: 0.5rem 0.8rem;
+      border-radius: 8px;
+      display: inline-block;
+    }
+
+    .copy-btn {
+      cursor: pointer;
+      color: var(--text-dim);
+      transition: color 0.2s;
+      margin-left: 0.4rem;
+    }
+
+    .copy-btn:hover { color: var(--accent); }
+
+    .badge-pill {
+      padding: 0.4em 1em;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .badge-active {
+      background: rgba(74,222,128,0.15);
+      color: var(--green);
+      border: 1px solid var(--green);
+    }
+
+    .badge-blocked {
+      background: rgba(248,113,113,0.15);
+      color: var(--red);
+      border: 1px solid var(--red);
+    }
+
+    .action-btn {
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      transition: var(--transition);
+      margin: 0 2px;
+    }
+
+    .btn-warning {
+      background: var(--yellow);
+      border: none;
+      color: black;
+      font-weight: 500;
+    }
+
+    .btn-warning:hover {
+      background: #f59e0b;
+      box-shadow: 0 0 12px rgba(251,191,36,0.4);
+    }
+
+    .btn-danger {
+      background: var(--red);
+      border: none;
+    }
+
+    .btn-danger:hover {
+      background: #ef4444;
+      box-shadow: 0 0 12px rgba(248,113,113,0.4);
+    }
+
+    /* Empty state */
+    .empty-state {
+      padding: 4rem 2rem;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      opacity: 0.2;
+      margin-bottom: 1.2rem;
+    }
+
+    /* Toast notifications */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+
+    .custom-toast {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      padding: 0.9rem 1.4rem;
+      margin-bottom: 0.5rem;
+      animation: slideIn 0.3s ease-out;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(80px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Modal */
+    .modal-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .modal-header, .modal-footer { border-color: var(--border); }
+
+    .btn-close { filter: invert(1); }
+
+    /* Footer */
+    .footer {
+      margin: 2.5rem 0 1.5rem;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 768px) {
+      .navbar-brand { font-size: 1.4rem; }
+      .stat-card { padding: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Animated background -->
+  <div class="bg-animation"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1">
+        <i class="fas fa-shield-haltered me-2"></i>ProxyForge
+      </span>
+      <div class="d-flex align-items-center gap-3">
+        <span id="statsBadge" class="badge bg-secondary">
+          <i class="fas fa-sync-alt fa-spin me-1"></i> loading...
+        </span>
+        <button class="btn btn-sm btn-outline-light" onclick="location.reload()" title="Refresh stats">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- Stats Section -->
+    <div class="stats-row" id="statsCards">
+      <!-- Filled by JS -->
+    </div>
+
+    <!-- Add Proxy Form -->
+    <div class="form-card">
+      <h5 class="mb-3"><i class="fas fa-plus-circle me-2" style="color:var(--accent);"></i>Add New Residential Proxy</h5>
+      <form action="/add" method="POST">
+        <div class="row g-3 align-items-end">
+          <div class="col-lg-9">
+            <label class="form-label small text-dim"><i class="fas fa-server me-1"></i>host:port:username:password</label>
+            <input type="text" class="form-control form-control-lg" name="proxy"
+                   placeholder="proxy.geonode.io:9000:user:pass" required>
+          </div>
+          <div class="col-lg-3">
+            <button type="submit" class="btn btn-accent w-100 btn-lg">
+              <i class="fas fa-cloud-upload-alt me-2"></i>Add Proxy
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Proxies Table -->
+    <div class="table-card">
+      <div class="d-flex justify-content-between align-items-center p-3 border-bottom border-secondary">
+        <h5 class="mb-0"><i class="fas fa-list-ul me-2"></i>Proxy Pool</h5>
+        <span class="badge bg-secondary" id="proxyCount">{{ proxies|length }}</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Proxy Details</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if proxies %}
+              {% for p in proxies %}
+              <tr>
+                <td class="text-dim">#{{ p.id }}</td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <span class="proxy-string" id="proxy-{{ p.id }}">{{ p.proxy_string }}</span>
+                    <i class="fas fa-copy copy-btn" onclick="copyProxy('proxy-{{ p.id }}')" title="Copy to clipboard"></i>
+                  </div>
+                </td>
+                <td>
+                  {% if p.active %}
+                    <span class="badge-pill badge-active"><i class="fas fa-check-circle"></i> Active</span>
+                  {% else %}
+                    <span class="badge-pill badge-blocked"><i class="fas fa-ban"></i> Blocked</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  <a href="/toggle/{{ p.id }}" class="btn btn-sm btn-warning action-btn">
+                    <i class="fas {% if p.active %}fa-pause-circle{% else %}fa-play-circle{% endif %} me-1"></i>
+                    {{ 'Disable' if p.active else 'Enable' }}
+                  </a>
+                  <button class="btn btn-sm btn-danger action-btn" data-bs-toggle="modal"
+                          data-bs-target="#deleteModal" data-id="{{ p.id }}">
+                    <i class="fas fa-trash-alt me-1"></i>Delete
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="4">
+                  <div class="empty-state">
+                    <i class="fas fa-ghost"></i>
+                    <p class="fs-5">No proxies in the pool yet.</p>
+                    <p class="text-dim">Add your first proxy using the form above.</p>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer small">
+      <i class="fas fa-code-branch me-1"></i> API: <code>/api/proxy</code> &nbsp;|&nbsp;
+      <i class="fas fa-database me-1"></i> SQLite &nbsp;|&nbsp;
+      <i class="fas fa-rocket me-1"></i> Deploy on Render
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-exclamation-triangle text-danger me-2"></i>Confirm Delete</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to permanently delete this proxy?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Delete</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ---- Live Stats via /api/stats ----
+    async function fetchStats() {
+      try {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+        document.getElementById('statsCards').innerHTML = `
+          <div class="stat-card card-total">
+            <div class="stat-icon"><i class="fas fa-database" style="color: var(--accent)"></i></div>
+            <div>
+              <div class="stat-value">${data.total}</div>
+              <div class="stat-label">Total Proxies</div>
+            </div>
+          </div>
+          <div class="stat-card card-active">
+            <div class="stat-icon"><i class="fas fa-check-circle" style="color: var(--green)"></i></div>
+            <div>
+              <div class="stat-value">${data.active}</div>
+              <div class="stat-label">Active</div>
+            </div>
+          </div>
+          <div class="stat-card card-blocked">
+            <div class="stat-icon"><i class="fas fa-ban" style="color: var(--red)"></i></div>
+            <div>
+              <div class="stat-value">${data.blocked}</div>
+              <div class="stat-label">Blocked</div>
+            </div>
+          </div>
+        `;
+        document.getElementById('statsBadge').innerHTML =
+          `<i class="fas fa-check-circle me-1"></i> ${data.active} active`;
+      } catch (e) {
+        console.error('Stats error:', e);
+      }
+    }
+
+    fetchStats();
+    setInterval(fetchStats, 30000);   // refresh every 30s
+
+    // ---- Copy proxy string ----
+    function copyProxy(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied to clipboard!', 'success');
+      }).catch(() => {
+        showToast('Copy failed', 'error');
+      });
+    }
+
+    // ---- Toast notifications ----
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'custom-toast';
+      let icon = 'info-circle';
+      if (type === 'success') icon = 'check-circle';
+      else if (type === 'error') icon = 'times-circle';
+      toast.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // ---- Delete modal logic ----
+    const deleteModal = document.getElementById('deleteModal');
+    deleteModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const proxyId = button.getAttribute('data-id');
+      document.getElementById('confirmDeleteBtn').href = `/delete/${proxyId}`;
+    });
+
+    // ---- Show error toast if redirected with ?error=invalid ----
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('error') === 'invalid') {
+      showToast('Invalid proxy format. Use host:port:user:pass', 'error');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  </script>
+</body>
+</html>
